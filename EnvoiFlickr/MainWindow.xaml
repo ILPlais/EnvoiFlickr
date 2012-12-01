@@ -1,7 +1,7 @@
-﻿<Window x:Class="EnvoiFlickr.MainWindow"
+﻿<Window
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Envoi sur Flickr - Étape n°1" Height="350" Width="525" ResizeMode="CanMinimize" WindowStyle="ThreeDBorderWindow" Icon="/EnvoiFlickr;component/icone.ico">
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" x:Class="EnvoiFlickr.MainWindow"
+        Height="350" Width="525" ResizeMode="CanMinimize" WindowStyle="ThreeDBorderWindow" Icon="/EnvoiFlickr;component/icone.ico" Title="Envoi vers Flickr">
     <Window.Background>
         <LinearGradientBrush EndPoint="1,0.5" StartPoint="0,0.5">
             <GradientStop Color="#FFC0FFFF" Offset="0" />
@@ -9,86 +9,88 @@
         </LinearGradientBrush>
     </Window.Background>
     <Grid>
-        <Button Content="Suivant &gt;" Height="23" HorizontalAlignment="Right" Margin="0,0,12,12" Name="btnSuivant" VerticalAlignment="Bottom" Width="75" IsDefault="True" Canvas.Left="422" Canvas.Top="282" IsEnabled="False" />
-        <Button Content="&lt; Précédent" Height="23" HorizontalAlignment="Right" Margin="0,0,93,12" Name="btnPrecedent" VerticalAlignment="Bottom" Width="75" IsEnabled="False" IsCancel="True" Canvas.Left="341" Canvas.Top="282" />
-        <TabControl HorizontalAlignment="Stretch" Margin="0,0,0,38" Name="tbcAssistant" VerticalAlignment="Stretch" BorderThickness="0" Background="{x:Null}">
-            <TabItem Header="Étape n°1" Name="tabItem1" Visibility="Collapsed">
+        <Button Content="Suivant &gt;" Height="23" HorizontalAlignment="Right" Margin="0,0,12,12" x:Name="btnSuivant" VerticalAlignment="Bottom" Width="85" IsDefault="True" Canvas.Left="422" Canvas.Top="282" IsEnabled="False" Click="btnSuivant_Click" />
+        <Button Content="&lt; Précédent" Height="23" HorizontalAlignment="Right" Margin="0,0,103,12" x:Name="btnPrecedent" VerticalAlignment="Bottom" Width="85" IsEnabled="False" IsCancel="True" Canvas.Left="341" Canvas.Top="282" Click="btnPrecedent_Click" />
+        <TabControl HorizontalAlignment="Stretch" Margin="0,0,0,38" x:Name="tbcAssistant" VerticalAlignment="Stretch" BorderThickness="0" SelectedIndex="0" Background="{x:Null}">
+            <TabItem Header="Étape n°1" x:Name="tabItem1" Visibility="Collapsed">
                 <Grid>
-                    <Label Content="Connexion à Flickr :" Height="28" HorizontalAlignment="Center" Name="lblConnexion" VerticalAlignment="Top" Width="483" Margin="6,0" />
-                    <Button Content="Lancer la connexion à votre compte Flickr" Height="23" HorizontalAlignment="Center" Margin="6,25,6,0" Name="btnConnexion" VerticalAlignment="Top" Width="483" />
-                    <TextBlock Height="50" HorizontalAlignment="Center" Margin="6,54,8,0" Name="lblValidation" Text="Ceci va ouvrir une fenêtre de votre navigateur Web pour permettre de vous identifier et d'accepter la connexion de l'application à votre compte Flickr. Une fois la connexion effectuée, fermez la fenêtre de votre navigateur et cliquez sur le bouton :" VerticalAlignment="Top" Width="481" TextAlignment="Center" TextWrapping="Wrap" />
-                    <Button Content="Validez votre connexion à Flickr" Height="23" HorizontalAlignment="Center" Margin="6,110,8,0" Name="btnValidation" VerticalAlignment="Top" Width="481" Focusable="True" IsEnabled="False" />
+                    <Label Content="Connexion à Flickr :" Height="28" HorizontalAlignment="Left" x:Name="lblConnexion" VerticalAlignment="Top" Width="483" Margin="6,0" />
+                    <Button Content="Lancer la connexion à votre compte Flickr" Height="23" HorizontalAlignment="Left" Margin="6,25,0,0" x:Name="btnConnexion" VerticalAlignment="Top" Width="483" Click="btnConnexion_Click" />
+                    <TextBlock Height="50" HorizontalAlignment="Left" Margin="6,54,8,0" x:Name="lblValidation" Text="Ceci va ouvrir une fenêtre de votre navigateur Web pour permettre de vous identifier et d'accepter la connexion de l'application à votre compte Flickr. Une fois la connexion effectuée, fermez la fenêtre de votre navigateur et cliquez sur le bouton :" VerticalAlignment="Top" Width="481" TextAlignment="Center" TextWrapping="Wrap" />
+                    <Button Content="Validez votre connexion à Flickr" Height="23" HorizontalAlignment="Left" Margin="6,110,8,0" x:Name="btnValidation" VerticalAlignment="Top" Width="481" Focusable="True" IsEnabled="False" Click="btnValidation_Click" />
+                    <Label Content="Quota restant sur votre compte Flickr : … Kio" Height="28" HorizontalAlignment="Left" Margin="6,139,0,0" x:Name="lblQuota" VerticalAlignment="Top" IsEnabled="True" />
                 </Grid>
             </TabItem>
-            <TabItem Header="Étape n°2" Name="tabItem2" Visibility="Collapsed">
+            <TabItem Header="Étape n°2" x:Name="tabItem2" Visibility="Collapsed">
                 <Grid>
-                    <Label Content="Dossier des photos à envoyer sur Flickr :" Height="28" HorizontalAlignment="Center" Margin="6,0,0,0" Name="lblDossier" VerticalAlignment="Top" Width="489" />
-                    <TextBox Height="23" HorizontalAlignment="Center" Margin="6,34,32,0" Name="txtDossier" VerticalAlignment="Top" Width="457" />
-                    <Button Content="…" Height="23" HorizontalAlignment="Center" Margin="469,33,6,0" Name="btnDossier" VerticalAlignment="Top" Width="20" />
-                    <CheckBox Content="Parcourir récrusivement" Height="16" HorizontalAlignment="Center" Margin="6,63,6,0" Name="chkRecrusive" VerticalAlignment="Top" Width="483" IsChecked="True" />
+                    <Label Content="Dossier des photos à envoyer sur Flickr :" Height="28" HorizontalAlignment="Center" Margin="6,0,0,0" x:Name="lblDossier" VerticalAlignment="Top" Width="489" />
+                    <TextBox Height="23" HorizontalAlignment="Center" Margin="6,34,32,0" x:Name="txtDossier" VerticalAlignment="Top" Width="457" />
+                    <Button Content="…" Height="23" HorizontalAlignment="Center" Margin="469,33,6,0" x:Name="btnDossier" VerticalAlignment="Top" Width="20" Click="btnDossier_Click" />
+                    <CheckBox Content="Parcourir récrusivement" Height="16" HorizontalAlignment="Center" Margin="6,63,6,0" x:Name="chkRecrusive" VerticalAlignment="Top" Width="483" IsChecked="True" />
                 </Grid>
             </TabItem>
-            <TabItem Header="Étape n°3" Name="tabItem3" Visibility="Collapsed">
+            <TabItem Header="Étape n°3" x:Name="tabItem3" Visibility="Collapsed">
                 <Grid>
-                    <CheckBox Content="Ajouter un titre aux photos :" Height="16" HorizontalAlignment="Center" Margin="6,6,8,0" Name="chkTitre" VerticalAlignment="Top" Width="481" />
-                    <TextBox Height="23" HorizontalAlignment="Center" Margin="6,28,6,0" Name="txtTitre" VerticalAlignment="Top" Width="483" IsEnabled="False" Text="Titre des photos" />
-                    <CheckBox Content="Ajouter une description aux photos :" Height="16" HorizontalAlignment="Center" Margin="6,57,8,0" Name="chkDescription" VerticalAlignment="Top" Width="481" />
-                    <TextBox Height="23" HorizontalAlignment="Center" Margin="6,79,6,0" Name="txtDescription" VerticalAlignment="Top" Width="483" IsEnabled="False" Text="Description des photos" />
-                    <CheckBox Content="Ajouter une position géographique aux photos :" Height="16" HorizontalAlignment="Center" Margin="6,108,8,0" Name="chkPosition" VerticalAlignment="Top" Width="481" />
-                    <Label Content="Latitude :" Height="28" HorizontalAlignment="Center" Margin="6,130,430,0" Name="lblLatitude" VerticalAlignment="Top" IsEnabled="False" />
-                    <Label Content="Longitude :" Height="28" HorizontalAlignment="Center" Margin="6,159,420,0" Name="lblLongitude" VerticalAlignment="Top" IsEnabled="False" />
-                    <TextBox Height="23" HorizontalAlignment="Center" Margin="91,130,284,0" Name="txtLatitude" VerticalAlignment="Top" Width="120" IsEnabled="False" />
-                    <TextBox Height="23" HorizontalAlignment="Center" Margin="91,159,284,0" Name="txtLongitude" VerticalAlignment="Top" Width="120" IsEnabled="False" />
-                    <Label Content="°" Height="28" HorizontalAlignment="Center" Margin="217,128,264,0" Name="lblDegreeLatitude" VerticalAlignment="Top" IsEnabled="False" />
-                    <Label Content="°" Height="28" HorizontalAlignment="Center" Margin="217,159,264,0" Name="lblDegreeLongitude" VerticalAlignment="Top" IsEnabled="False" />
-                    <Label Content="Visibilité :" Height="28" HorizontalAlignment="Center" Margin="6,193,428,0" Name="lblVisibilite" VerticalAlignment="Top" />
-                    <ComboBox Height="23" HorizontalAlignment="Center" Margin="91,195,6,0" Name="cmbVisibilite" VerticalAlignment="Top" Width="398" SelectedIndex="0">
+                    <CheckBox Content="Ajouter un titre aux photos :" Height="16" HorizontalAlignment="Center" Margin="6,6,8,0" x:Name="chkTitre" VerticalAlignment="Top" Width="481" Checked="chkTitre_Checked" Unchecked="chkTitre_Checked" />
+                    <TextBox Height="23" HorizontalAlignment="Center" Margin="6,28,6,0" x:Name="txtTitre" VerticalAlignment="Top" Width="483" IsEnabled="False" Text="Titre des photos" />
+                    <CheckBox Content="Ajouter une description aux photos :" Height="16" HorizontalAlignment="Center" Margin="6,57,8,0" x:Name="chkDescription" VerticalAlignment="Top" Width="481" Checked="chkDescription_Checked" Unchecked="chkDescription_Checked" />
+                    <TextBox Height="23" HorizontalAlignment="Center" Margin="6,79,6,0" x:Name="txtDescription" VerticalAlignment="Top" Width="483" IsEnabled="False" Text="Description des photos" />
+                    <CheckBox Content="Ajouter une position géographique aux photos :" Height="16" HorizontalAlignment="Center" Margin="6,108,8,0" x:Name="chkPosition" VerticalAlignment="Top" Width="481" Checked="chkPosition_Checked" Unchecked="chkPosition_Checked" />
+                    <Label Content="Latitude :" Height="28" HorizontalAlignment="Center" Margin="8,128,428,0" x:Name="lblLatitude" VerticalAlignment="Top" IsEnabled="False" />
+                    <Label Content="Longitude :" Height="28" HorizontalAlignment="Center" Margin="8,157,418,0" x:Name="lblLongitude" VerticalAlignment="Top" IsEnabled="False" />
+                    <TextBox Height="23" HorizontalAlignment="Center" Margin="91,130,284,0" x:Name="txtLatitude" VerticalAlignment="Top" Width="120" IsEnabled="False" Text="48,24143" TextAlignment="Right" />
+                    <TextBox Height="23" HorizontalAlignment="Center" Margin="91,159,284,0" x:Name="txtLongitude" VerticalAlignment="Top" Width="120" IsEnabled="False" Text=" -4,06721" TextAlignment="Right" />
+                    <Label Content="°" Height="28" HorizontalAlignment="Center" Margin="217,128,264,0" x:Name="lblDegreeLatitude" VerticalAlignment="Top" IsEnabled="False" />
+                    <Label Content="°" Height="28" HorizontalAlignment="Center" Margin="217,159,264,0" x:Name="lblDegreeLongitude" VerticalAlignment="Top" IsEnabled="False" />
+                    <Label Content="Visibilité :" Height="28" HorizontalAlignment="Center" Margin="6,186,428,0" x:Name="lblVisibilite" VerticalAlignment="Top" />
+                    <ComboBox Height="23" HorizontalAlignment="Center" Margin="91,188,6,0" x:Name="cmbVisibilite" VerticalAlignment="Top" Width="398" SelectedIndex="0">
                         <ComboBoxItem Content="Tout le monde" />
                         <ComboBoxItem Content="Votre famille" />
                         <ComboBoxItem Content="Vos amis" />
                         <ComboBoxItem Content="Votre famille et vos amis" />
                         <ComboBoxItem Content="Uniquement vous" />
                     </ComboBox>
+                    <Label Content="Album :" Height="28" HorizontalAlignment="Center" Margin="8,209,418,0" x:Name="lblAlbum" VerticalAlignment="Top" Width="69" />
+                    <ComboBox Height="23" HorizontalAlignment="Center" Margin="91,211,6,0" x:Name="cmbAlbum" SelectedIndex="0" VerticalAlignment="Top" Width="398" SelectionChanged="cmbAlbum_SelectionChanged">
+                        <ComboBoxItem Content="Sélectionnez un album" />
+                        <ComboBoxItem Content="Ajoutez un nouvel album…" />
+                    </ComboBox>
+                    <TextBox Height="23" HorizontalAlignment="Center" Margin="91,234,6,0" x:Name="txtNomAlbum"  VerticalAlignment="Top" Width="398" Visibility="Hidden" />
                 </Grid>
             </TabItem>
-            <TabItem Header="Étape n°4" Name="tabItem4" Visibility="Collapsed">
+            <TabItem Header="Étape n°4" x:Name="tabItem4" Visibility="Collapsed">
                 <Grid>
-                    <Label Content="Envoi des photos sur Flickr." Height="28" Name="lblEnvoi" Margin="6,6,6,229" HorizontalAlignment="Center" Width="483" />
-                    <ListBox HorizontalAlignment="Center" Margin="6,32,6,126" Name="lbEnvoi" Width="483" IsEnabled="True">
-                        <ListBoxItem Content="Photo n°1.jpg" Selector.IsSelected="True" />
-                        <ListBoxItem Content="Photo n°2.jpg" />
-                        <ListBoxItem Content="Photo n°3.jpg" />
-                        <ListBoxItem Content="Vidéo n°1.avi" />
-                    </ListBox>
-                    <Label Content="Progression de l'envoi de la photo :" Height="28" HorizontalAlignment="Center" Margin="6,143,8,0" Name="lblProgressionPhoto" VerticalAlignment="Top" Width="481" />
-                    <ProgressBar Height="20" HorizontalAlignment="Center" Margin="6,173,6,0" Name="pbProgressionPhoto" VerticalAlignment="Top" Width="483" Value="25" />
-                    <Label Content="Progression de l'envoi total :" Height="28" HorizontalAlignment="Center" Margin="6,199,6,0" Name="lblProgressionTotal" VerticalAlignment="Top" Width="483" />
-                    <ProgressBar Height="20" HorizontalAlignment="Center" Margin="6,233,6,0" Name="pbProgressionTotal" Value="25" VerticalAlignment="Top" Width="483" />
+                    <Label Content="Envoi des photos sur Flickr." Height="28" x:Name="lblEnvoi" Margin="6,6,6,229" HorizontalAlignment="Center" Width="483" />
+                    <ListBox HorizontalAlignment="Center" Margin="6,32,6,126" x:Name="lbEnvoi" Width="483" IsEnabled="True" />
+                    <Label Content="Progression de l'envoi de la photo :" Height="28" HorizontalAlignment="Center" Margin="6,143,8,0" x:Name="lblProgressionPhoto" VerticalAlignment="Top" Width="481" />
+                    <ProgressBar Height="20" HorizontalAlignment="Center" Margin="6,173,6,0" x:Name="pbProgressionPhoto" VerticalAlignment="Top" Width="483" Value="25" />
+                    <Label Content="Progression de l'envoi total :" Height="28" HorizontalAlignment="Center" Margin="6,199,6,0" x:Name="lblProgressionTotal" VerticalAlignment="Top" Width="483" />
+                    <ProgressBar Height="20" HorizontalAlignment="Center" Margin="6,233,6,0" x:Name="pbProgressionTotal" Value="25" VerticalAlignment="Top" Width="483" />
                 </Grid>
             </TabItem>
         </TabControl>
-        <Canvas Name="cnvFlickr" Width="118.86651" Height="36" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" Margin="4,263,380,12">
-            <Canvas Name="g2403" RenderTransform="0.25399041,0,0,0.25399041,0,-1.9831686">
-                <Canvas Name="g2405">
-                    <Path Fill="#FF0063DB" Name="lettreF">
+        <Canvas xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" x:Name="cnvFlickr" Width="118.86651" Height="36" Margin="4,263,380,12">
+            <Canvas x:Name="g2403" RenderTransform="0.25399041,0,0,0.25399041,0,-1.9831686">
+                <Canvas x:Name="g2405">
+                    <Path Fill="#FF0063DB" x:Name="lettreF">
                         <Path.Data>
                             <PathGeometry FillRule="Nonzero" Figures="M20.591,73.837L0,73.837 0,48.486 21.173,48.486 21.173,42.05C21.173,10.865 35.353,0 63.324,0 70.9,0 76.727,1.207 81.194,2.013L79.058,26.96C76.145,25.954 73.231,25.35 67.987,25.35 59.052,25.35 55.555,31.788 55.555,42.05L55.555,48.487 80.418,48.487 80.418,73.838 55.555,73.838 55.555,153.305 20.591,153.305 20.591,73.837z" />
                         </Path.Data>
                     </Path>
-                    <Rectangle RadiusX="0" RadiusY="0" Fill="#FF0063DB" Name="lettreL" Width="34.964001" Height="150.88901" Canvas.Left="98.675003" Canvas.Top="2.415" />
-                    <Rectangle RadiusX="0" RadiusY="0" Fill="#FF0063DB" Name="lettreIPoint" Width="34.965" Height="26.556999" Canvas.Left="163.552" Canvas.Top="4.829" />
-                    <Rectangle RadiusX="0" RadiusY="0" Fill="#FF0063DB" Name="lettreI" Width="34.965" Height="104.817" Canvas.Left="163.552" Canvas.Top="48.486" />
-                    <Path Fill="#FF0063DB" Name="lettreC">
+                    <Rectangle RadiusX="0" RadiusY="0" Fill="#FF0063DB" x:Name="lettreL" Width="34.964001" Height="150.88901" Canvas.Left="98.675003" Canvas.Top="2.415" />
+                    <Rectangle RadiusX="0" RadiusY="0" Fill="#FF0063DB" x:Name="lettreIPoint" Width="34.965" Height="26.556999" Canvas.Left="163.552" Canvas.Top="4.829" />
+                    <Rectangle RadiusX="0" RadiusY="0" Fill="#FF0063DB" x:Name="lettreI" Width="34.965" Height="104.817" Canvas.Left="163.552" Canvas.Top="48.486" />
+                    <Path Fill="#FF0063DB" x:Name="lettreC">
                         <Path.Data>
                             <PathGeometry FillRule="Nonzero" Figures="M303.604,78.462C297.194,74.441 290.784,72.629 282.431,72.629 267.28,72.629 255.625,83.493 255.625,101.601 255.625,118.3 269.223,129.162 284.374,129.162 292.339,129.162 300.304,127.353 306.13,124.133L306.907,151.092C298.165,154.112 287.677,155.721 278.353,155.721 244.941,155.721 219.496,135.602 219.496,100.998 219.496,66.192 244.941,46.074 278.353,46.074 288.843,46.074 298.165,47.885 306.13,51.908L303.604,78.462z" />
                         </Path.Data>
                     </Path>
-                    <Path Fill="#FF0063DB" Name="lettreK">
+                    <Path Fill="#FF0063DB" x:Name="lettreK">
                         <Path.Data>
                             <PathGeometry FillRule="Nonzero" Figures="M424.231,48.486L389.073,96.569 427.145,153.304 384.799,153.304 356.829,101.399 356.44,101.399 356.44,153.304 321.477,153.304 321.477,2.415 321.477,2.415 356.44,2.415 356.44,92.548 356.829,92.548 385.965,48.486z" />
                         </Path.Data>
                     </Path>
-                    <Path Fill="#FFFF0084" Name="lettreR">
+                    <Path Fill="#FFFF0084" x:Name="lettreR">
                         <Path.Data>
                             <PathGeometry FillRule="Nonzero" Figures="M512.417,77.456C508.532,76.251 504.646,76.251 500.569,76.251 484.253,76.251 475.122,88.522 475.122,109.044L475.122,153.304 440.159,153.304 440.159,48.486 472.014,48.486 472.014,67.8 472.403,67.8C478.423,54.521 487.165,46.072 502.317,46.072 506.393,46.072 510.667,46.675 514.167,47.278L512.417,77.456z" />
                         </Path.Data>
@@ -96,5 +98,7 @@
                 </Canvas>
             </Canvas>
         </Canvas>
+        <Label Content="Étape n°1" Height="28" HorizontalAlignment="Left" Margin="129,0,0,11" x:Name="lblEtape" VerticalAlignment="Bottom" Width="180" HorizontalContentAlignment="Right" FontSize="14" FontStretch="Normal" FontWeight="Bold" />
+        <Label Content="Version non-fonctionnelle !" Height="60" Margin="0,186,0,0" Name="label1" VerticalAlignment="Top" FontSize="36" Foreground="Red" FontWeight="Bold" HorizontalContentAlignment="Center" />
     </Grid>
 </Window>
