@@ -60,7 +60,7 @@
             </TabItem>
             <TabItem Header="Étape n°4" x:Name="tabItem4" Visibility="Collapsed">
                 <Grid>
-                    <Label Content="Envoi des photos sur Flickr." Height="28" x:Name="lblEnvoi" Margin="6,6,6,229" HorizontalAlignment="Center" Width="483" />
+                    <Label Content="Envoi des photos sur Flickr." Height="28" x:Name="lblEnvoi" Margin="6,0,6,235" HorizontalAlignment="Center" Width="483" />
                     <ListBox HorizontalAlignment="Center" Margin="6,32,6,126" x:Name="lbEnvoi" Width="483" IsEnabled="True" />
                     <Label Content="Progression de l'envoi de la photo :" Height="28" HorizontalAlignment="Center" Margin="6,143,8,0" x:Name="lblProgressionPhoto" VerticalAlignment="Top" Width="481" />
                     <ProgressBar Height="20" HorizontalAlignment="Center" Margin="6,173,6,0" x:Name="pbProgressionPhoto" VerticalAlignment="Top" Width="483" Value="25" />
@@ -99,6 +99,5 @@
             </Canvas>
         </Canvas>
         <Label Content="Étape n°1" Height="28" HorizontalAlignment="Left" Margin="129,0,0,11" x:Name="lblEtape" VerticalAlignment="Bottom" Width="180" HorizontalContentAlignment="Right" FontSize="14" FontStretch="Normal" FontWeight="Bold" />
-        <Label Content="Version non-fonctionnelle !" Height="60" Margin="0,186,0,0" Name="label1" VerticalAlignment="Top" FontSize="36" Foreground="Red" FontWeight="Bold" HorizontalContentAlignment="Center" />
     </Grid>
 </Window>
