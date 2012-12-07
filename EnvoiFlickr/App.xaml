@@ -31,7 +31,7 @@
         </Style>
 		<Style TargetType="{x:Type ProgressBar}">
 			<Setter Property="Background" Value="#FFE6E6E6"/>
-			<Setter Property="Foreground" Value="#FF0073EA"/>
+            <Setter Property="Foreground" Value="#FFFF0084"/>
 		</Style>
     </Application.Resources>
 </Application>

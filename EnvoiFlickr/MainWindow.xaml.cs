@@ -11,8 +11,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using System.Threading;
-using System.Windows.Threading;
+using System.ComponentModel;
 using FlickrNet;
 
 namespace EnvoiFlickr
@@ -23,19 +22,30 @@ namespace EnvoiFlickr
     public partial class MainWindow : Window
     {
         // Déclaration des constantes
-        public const String clefFlickr = "caafdbc81b5242ce72359f183fa97414";
-        public const String secretFlickr = "97624892c344cba6";
+        private const String clefFlickr = "caafdbc81b5242ce72359f183fa97414";
+        private const String secretFlickr = "97624892c344cba6";
+
+        // Déclaration du BackgroundWorker
+        private BackgroundWorker transfertFlickr;
 
         // Déclaration des variables
-        public Flickr conFlickr = new Flickr(clefFlickr, secretFlickr);
-        public Auth autFlickr = new Auth();
-        public String tempFrob;
-        public string[] extensions = { "*.jp*g", "*.gif", "*.png", "*.tif*", 
-                                       "*.avi", "*.wmv", "*.mov", "*.mp*g*", 
-                                       "*.3gp", "*.m2ts", "*.ogg", "*.ogv" };
-        List<String> listeImages = new List<String>();
-        List<String> listeAlbums = new List<String>();
-        String idAlbumSelect;
+        private Flickr conFlickr = new Flickr(clefFlickr, secretFlickr);
+        private Auth autFlickr = new Auth();
+        private String tempFrob;
+        private string[] extensions = { "*.jp*g", "*.gif", "*.png", "*.tif*", 
+                                        "*.avi", "*.wmv", "*.mov", "*.mp*g*", 
+                                        "*.3gp", "*.m2ts", "*.ogg", "*.ogv" };
+        private List<String> listeImages = new List<String>();
+        private List<String> listeAlbums = new List<String>();
+        private String idAlbumSelect;
+        private String nomAlbum = String.Empty;
+        private Boolean isPublic = false;
+        private Boolean isFriend = false;
+        private Boolean isFamily = false;
+        private String tempTitre = String.Empty;
+        private String tempDescription = String.Empty;
+        private Boolean isGeolocalise = false;
+        private double[] coordonnees;
 
         public MainWindow()
         {
@@ -43,13 +53,56 @@ namespace EnvoiFlickr
 
             // Charge le dossier Images par défaut
             txtDossier.Text = Environment.GetFolderPath(Environment.SpecialFolder.MyPictures);
+
+            // Création du BackgroundWorker
+            transfertFlickr = new BackgroundWorker();
+
+            // Indique la fonction à traiter lors du déclanchement de l'évenement DoWork
+            transfertFlickr.DoWork += new DoWorkEventHandler(EnvoiFlickr);
+
+            // Indique la fonction de traitement lors du déclanchement de l'évenement indiquant un changement de progression
+            transfertFlickr.ProgressChanged += new ProgressChangedEventHandler(flickrProgressionEnvoiTotal);
+            transfertFlickr.WorkerReportsProgress = true;
+
+            // Indique que le BackgroundWorker peut être interrompu
+            transfertFlickr.WorkerSupportsCancellation = true;
+
+            // Indique la fonction à exécuter à la fin du transfert
+            transfertFlickr.RunWorkerCompleted += new RunWorkerCompletedEventHandler(transfertFlickr_RunWorkerCompleted);
+
+            // Paramètre la fonction gérant la progression de l'envoi
+            conFlickr.OnUploadProgress += new EventHandler<UploadProgressEventArgs>(flickrProgressionEnvoiPhoto);
         }
 
         private void btnSuivant_Click(object sender, RoutedEventArgs e)
         {
-            // Change d'onglet
-            tbcAssistant.SelectedIndex++;
-            changeOnglet(tbcAssistant);
+            if (tbcAssistant.SelectedIndex != tbcAssistant.Items.Count - 1)
+            {
+                // Change d'onglet
+                tbcAssistant.SelectedIndex++;
+                changeOnglet(tbcAssistant);
+            }
+            else
+            {
+                if (transfertFlickr.IsBusy)
+                {
+                    // Demande confirmation
+                    if (MessageBox.Show("Voulez-vous annuler le transfert des images ?", "Annulation",
+                        MessageBoxButton.YesNo, MessageBoxImage.Question, MessageBoxResult.Yes) == MessageBoxResult.Yes)
+                    {
+                        // Annule le transfert
+                        transfertFlickr.CancelAsync();
+                        taskBarItemInfo.ProgressState = System.Windows.Shell.TaskbarItemProgressState.Paused;
+                        MessageBox.Show("Le transfert est en cours d'annulation. Veuillez patienter…", "Annulation",
+                            MessageBoxButton.OK, MessageBoxImage.Information);
+                    }
+                }
+                else
+                {
+                    // Ferme l'application
+                    this.Close();
+                }
+            }
         }
 
         private void btnPrecedent_Click(object sender, RoutedEventArgs e)
@@ -103,7 +156,7 @@ namespace EnvoiFlickr
             catch (Exception ex)
             {
                 MessageBox.Show("Une erreur vient de ce produire :" + Environment.NewLine + ex.Message,
-                    "Erreur d'autentification à Flickr", MessageBoxButton.OK, MessageBoxImage.Error);
+                    "Erreur d'authentification à Flickr", MessageBoxButton.OK, MessageBoxImage.Error);
             }
 
             // Active le bouton "Suivant"
@@ -120,6 +173,10 @@ namespace EnvoiFlickr
                 lblQuota.Content = "Quota restant sur votre compte Flickr : ∞ Kio";
             }
 
+            // Affiche un message de bienvenue
+            MessageBox.Show("Bienvenue " + conFlickr.PeopleGetUploadStatus().UserName + " !", "Bienvenue",
+                MessageBoxButton.OK, MessageBoxImage.Information);
+
             // Récupère la liste des albums
             cmbAlbum.Items.Clear();
             listeAlbums.Clear();
@@ -133,6 +190,7 @@ namespace EnvoiFlickr
                 cmbAlbum.Items.Add(album.Title);
                 listeAlbums.Add(album.PhotosetId);
             }
+            cmbAlbum.SelectedIndex = 0;
         }
 
         private void btnDossier_Click(object sender, RoutedEventArgs e)
@@ -179,6 +237,11 @@ namespace EnvoiFlickr
             // Désactive le bouton Précédent
             btnPrecedent.IsEnabled = false;
 
+            // Change le bouton Suivant en bouton Annuler
+            btnSuivant.Content = "Annuler";
+            btnSuivant.IsEnabled = true;
+            btnSuivant.IsCancel = true;
+
             // Vide la liste des images à envoyer
             lbEnvoi.Items.Clear();
             listeImages.Clear();
@@ -198,11 +261,6 @@ namespace EnvoiFlickr
 
             // Spécifie les limites de la barre de progression total
             pbProgressionTotal.Maximum = listeImages.Count();
-
-            // Initialise les variables
-            Boolean isPublic = false;
-            Boolean isFriend = false;
-            Boolean isFamily = false;
 
             // Récupère la visibilité des images
             switch (cmbVisibilite.SelectedIndex)
@@ -240,30 +298,36 @@ namespace EnvoiFlickr
             }
 
             // Récupère le titre des images
-            String tempTitre = String.Empty;
             if (chkTitre.IsChecked.Value)
             {
                 tempTitre = txtTitre.Text;
             }
 
             // Récupère la description des images
-            String tempDescription = String.Empty;
             if (chkDescription.IsChecked.Value)
             {
                 tempDescription = txtDescription.Text;
             }
 
-            // Récupère la position des photos
-            double[] coordonnees = new double[] { Convert.ToDouble(txtLatitude.Text), Convert.ToDouble(txtLongitude.Text) };
+            // Récupère le nom de l'album
+            if (idAlbumSelect == "0")
+            {
+                nomAlbum = txtNomAlbum.Text;
+            }
 
-            // Créer le Thread d'envoi
-            ThreadTransfert threadEnvoi = new ThreadTransfert(lbEnvoi, pbProgressionTotal, pbProgressionPhoto,
-                tempTitre, tempDescription, isPublic, isFriend, isFamily, listeImages, listeAlbums,
-                idAlbumSelect, txtNomAlbum.Text, chkPosition.IsChecked.Value, coordonnees, ref conFlickr);
+            isGeolocalise = chkPosition.IsChecked.Value;
 
-            // Lance le Thread
-            Thread t = new Thread(new ThreadStart(threadEnvoi.ThreadProc));
-            t.Start();
+            if (isGeolocalise)
+            {
+                // Récupère la position des photos
+                coordonnees = new double[] { Convert.ToDouble(txtLatitude.Text), Convert.ToDouble(txtLongitude.Text) };
+            }
+
+            // Démarre la barre de progression dans la barre de tâches
+            taskBarItemInfo.ProgressState = System.Windows.Shell.TaskbarItemProgressState.Normal;
+
+            // Lance le BackgroundWorker
+            transfertFlickr.RunWorkerAsync();
         }
 
         private void parcoursRepertoire(String repertoire)
@@ -307,124 +371,125 @@ namespace EnvoiFlickr
                 idAlbumSelect = listeAlbums[cmbAlbum.SelectedIndex];
             }
         }
-    }
 
-    // Gestion du thread d'envoi
-    public class ThreadTransfert
-    {
-        // Variable à utiliser dans le thread
-        private ListBox lbEnvoi;
-        private ProgressBar pbEnvoiTotal, pbEnvoiPhoto;
-        private String titrePhotos, descPhotos, idAlbumSelect, nomAlbumSelect;
-        private Boolean isPublic, isFriend, isFamily, isGeolocated;
-        private double[] coordonnees = new double[2];
-        private List<String> listeImages, listeAlbums;
-        private Flickr conFlickr;
-
-        /// <summary>
-        /// Constructeur du thread d'envoi
-        /// </summary>
-        /// <param name="listeEnvoi">ListBox contenant les fichiers à envoyer</param>
-        /// <param name="progressionEnvoiTotal">ProgressBar affichant la progression total du transfert</param>
-        /// <param name="progressionEnvoiPhoto">ProgressBar affichant la progression de l'envoi d'une photo</param>
-        /// <param name="titre">Titre utilisé pour les photos</param>
-        /// <param name="description">Description utilisée pour les photos</param>
-        /// <param name="flagPublic">Photos visibles publiquement</param>
-        /// <param name="flagFriend">Photos visibles par les amis</param>
-        /// <param name="flagFamily">Photos visibles par la famille</param>
-        /// <param name="lsImages">Liste des images</param>
-        /// <param name="lsAlbums">Liste des albums</param>
-        /// <param name="idAlbum">Identifiant de l'album sélectionné</param>
-        /// <param name="nomAlbum">Nom de l'album sélectionné</param>
-        /// <param name="boolPosition">Enregistrement de la géolocalisation</param>
-        /// <param name="coordPosition">Coordonnées des photos</param>
-        /// <param name="connectFlickr">Connection à Flickr</param>
-        public ThreadTransfert(ListBox listeEnvoi, ProgressBar progressionEnvoiTotal,
-            ProgressBar progressionEnvoiPhoto, String titre, String description,
-            Boolean flagPublic, Boolean flagFriend, Boolean flagFamily,
-            List<String> lsImages, List<String> lsAlbums, String idAlbum, String nomAlbum,
-            Boolean boolPosition, double[] coordPosition, ref Flickr connectFlickr)
-        {
-            lbEnvoi = listeEnvoi;
-            pbEnvoiTotal = progressionEnvoiTotal;
-            pbEnvoiPhoto = progressionEnvoiPhoto;
-            titrePhotos = titre;
-            descPhotos = description;
-            isPublic = flagPublic;
-            isFriend = flagFriend;
-            isFamily = flagFamily;
-            listeImages = lsImages;
-            listeAlbums = lsAlbums;
-            idAlbumSelect = idAlbum;
-            nomAlbumSelect = nomAlbum;
-            isGeolocated = boolPosition;
-            coordonnees = coordPosition;
-            conFlickr = connectFlickr;
-        }
-
-        // Procédure d'envoi
-        public void ThreadProc()
+        // Fonction de traitement de l'envoi vers Flickr
+        private void EnvoiFlickr(object data, DoWorkEventArgs e)
         {
             String photoId = String.Empty;
             int i = 0;
 
-            // Paramètre la fonction gérant la progression de l'envoi
-            conFlickr.OnUploadProgress += flickrEnvoi;
-
             foreach (String image in listeImages)
             {
-                try
+                if (!transfertFlickr.CancellationPending)
                 {
-                    // Sélectionne l'image dans la liste
-                    //lbEnvoi.SelectedIndex = i;
-                    //pbEnvoiTotal.Value = i + 1;
-
-                    // Envoi l'image sur Flickr
-                    photoId = conFlickr.UploadPicture(image, titrePhotos, descPhotos, String.Empty,
-                        isPublic, isFamily, isFriend);
-
-                    // Si la demande d'ajout à un album est faite
-                    if (idAlbumSelect != "-1")
+                    try
                     {
-                        if (idAlbumSelect == "0")
-                        {
-                            // S'il s'agit d'un nouvel album : le créer
-                            idAlbumSelect = conFlickr.PhotosetsCreate(nomAlbumSelect, photoId).PhotosetId;
-                        }
-                        else
-                        {
-                            // Sinon, ajouter la photo à l'album existant
-                            conFlickr.PhotosetsAddPhoto(idAlbumSelect, photoId);
-                        }
-                    }
+                        // Indique au BackgroundWorker qu'il y a eu progression 
+                        transfertFlickr.ReportProgress(i);
 
-                    // Si la demande de géolocalisation est spécifiée
-                    if (isGeolocated)
+                        // Envoi l'image sur Flickr
+                        photoId = conFlickr.UploadPicture(image, tempTitre, tempDescription, String.Empty,
+                            isPublic, isFamily, isFriend);
+
+                        // Si la demande d'ajout à un album est faite
+                        if (idAlbumSelect != "-1")
+                        {
+                            if (idAlbumSelect == "0")
+                            {
+                                // S'il s'agit d'un nouvel album : le créer
+                                idAlbumSelect = conFlickr.PhotosetsCreate(nomAlbum, photoId).PhotosetId;
+                            }
+                            else
+                            {
+                                // Sinon, ajouter la photo à l'album existant
+                                conFlickr.PhotosetsAddPhoto(idAlbumSelect, photoId);
+                            }
+                        }
+
+                        // Si la demande de géolocalisation est spécifiée
+                        if (isGeolocalise)
+                        {
+                            conFlickr.PhotosGeoSetLocation(photoId, coordonnees[0], coordonnees[1]);
+                        }
+
+                        i++;
+                    }
+                    catch (FlickrException Ex)
                     {
-                        conFlickr.PhotosGeoSetLocation(photoId, coordonnees[0], coordonnees[1]);
+                        MessageBox.Show("Une erreur c'est produite lors de l'envoi de l'image vers Flickr."
+                            + Environment.NewLine + Ex.Message, "Erreur d'envoi d'une image sur Flickr",
+                            MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
                     }
-
-                    i++;
+                    catch (Exception Ex)
+                    {
+                        MessageBox.Show("Une super erreur c'est produite lors de l'envoi de l'image vers Flickr."
+                            + Environment.NewLine + Ex.Message, "Super erreur d'envoi d'une image sur Flickr",
+                            MessageBoxButton.OK, MessageBoxImage.Error);
+                        return;
+                    }
                 }
-                catch (FlickrException Ex)
+                else
                 {
-                    MessageBox.Show("Une erreur c'est produite lors de l'envoi de l'image vers Flickr."
-                        + Environment.NewLine + Ex.Message, "Erreur d'envoi d'une image sur Flickr",
-                        MessageBoxButton.OK, MessageBoxImage.Error);
-                }
-                catch (Exception Ex)
-                {
-                    MessageBox.Show("Une super erreur c'est produite lors de l'envoi de l'image vers Flickr."
-                        + Environment.NewLine + Ex.Message, "Super erreur d'envoi d'une image sur Flickr",
-                        MessageBoxButton.OK, MessageBoxImage.Error);
+                    e.Cancel = true;
                 }
             }
         }
 
-        private void flickrEnvoi(object sender, UploadProgressEventArgs progression)
+        // Fonction appellée lors de la progression de l'envoi d'une photo
+        private void flickrProgressionEnvoiPhoto(object sender, UploadProgressEventArgs progression)
         {
             // Change la valeur de la barre de progression
-            pbEnvoiPhoto.Value = progression.ProcessPercentage;
+            //pbProgressionPhoto.Value = progression.ProcessPercentage;
+        }
+
+        // Fonction appellée lors de la progression de l'envoi total
+        private void flickrProgressionEnvoiTotal(object sender, ProgressChangedEventArgs e)
+        {
+            // Mise à jour de la ProgressBar
+            pbProgressionTotal.Value = e.ProgressPercentage + 1;
+            taskBarItemInfo.ProgressValue = (e.ProgressPercentage + 1) / pbProgressionTotal.Maximum;
+
+            // Mise à jour de la sélection dans la liste
+            lbEnvoi.SelectedIndex = e.ProgressPercentage;
+        }
+
+        // Fonction exécutée lors de la fin du transfert
+        void transfertFlickr_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            // Change le bouton Annuler en bouton Quitter
+            btnSuivant.Content = "Quitter";
+
+            if (e.Error != null)
+            {
+                // En cas d'erreur
+                taskBarItemInfo.ProgressState = System.Windows.Shell.TaskbarItemProgressState.Error;
+                MessageBox.Show("Une erreur c'est produite lors du transfert des images vers Flickr."
+                    + Environment.NewLine + e.Error.ToString(),
+                    "Erreur lors du transfert vers Flickr", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            else
+            {
+                taskBarItemInfo.ProgressState = System.Windows.Shell.TaskbarItemProgressState.None;
+
+                if (e.Cancelled == false)
+                {
+                    // Message indiquant que le transfert est fini
+                    if (MessageBox.Show("Le transfert des images vers Flickr est fini."
+                        + Environment.NewLine + "Voulez-vous afficher votre galerie ?",
+                        "Fin du transfert", MessageBoxButton.YesNo, MessageBoxImage.Information)
+                        == MessageBoxResult.Yes)
+                    {
+                        System.Diagnostics.Process.Start(conFlickr.UrlsGetUserPhotos());
+                    }
+                }
+                else
+                {
+                    // Message indiquant que le transfert a été annulé
+                    MessageBox.Show("Le transfert des images vers Flickr a été annulé.",
+                        "Fin du transfert", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+            }
         }
     }
 }
