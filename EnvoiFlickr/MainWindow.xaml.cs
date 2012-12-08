@@ -12,6 +12,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.ComponentModel;
+using System.Windows.Threading;
 using FlickrNet;
 
 namespace EnvoiFlickr
@@ -27,6 +28,10 @@ namespace EnvoiFlickr
 
         // Déclaration du BackgroundWorker
         private BackgroundWorker transfertFlickr;
+
+        // Déclaration du DispatcherTimer
+        private DispatcherTimer timProgression;
+        private int valProgression;
 
         // Déclaration des variables
         private Flickr conFlickr = new Flickr(clefFlickr, secretFlickr);
@@ -72,6 +77,15 @@ namespace EnvoiFlickr
 
             // Paramètre la fonction gérant la progression de l'envoi
             conFlickr.OnUploadProgress += new EventHandler<UploadProgressEventArgs>(flickrProgressionEnvoiPhoto);
+
+            // Création du DispatcherTimer
+            timProgression = new DispatcherTimer();
+
+            // Indique la fonction à appeller
+            timProgression.Tick+= new EventHandler(timProgression_Tick);
+
+            // Indique l'interval
+            timProgression.Interval = new TimeSpan(100);
         }
 
         private void btnSuivant_Click(object sender, RoutedEventArgs e)
@@ -326,6 +340,9 @@ namespace EnvoiFlickr
             // Démarre la barre de progression dans la barre de tâches
             taskBarItemInfo.ProgressState = System.Windows.Shell.TaskbarItemProgressState.Normal;
 
+            // Démarre le DispatcherTimer
+            timProgression.Start();
+
             // Lance le BackgroundWorker
             transfertFlickr.RunWorkerAsync();
         }
@@ -436,14 +453,14 @@ namespace EnvoiFlickr
             }
         }
 
-        // Fonction appellée lors de la progression de l'envoi d'une photo
+        // Fonction appelée lors de la progression de l'envoi d'une photo
         private void flickrProgressionEnvoiPhoto(object sender, UploadProgressEventArgs progression)
         {
             // Change la valeur de la barre de progression
-            //pbProgressionPhoto.Value = progression.ProcessPercentage;
+            valProgression = progression.ProcessPercentage;
         }
 
-        // Fonction appellée lors de la progression de l'envoi total
+        // Fonction appelée lors de la progression de l'envoi total
         private void flickrProgressionEnvoiTotal(object sender, ProgressChangedEventArgs e)
         {
             // Mise à jour de la ProgressBar
@@ -459,6 +476,9 @@ namespace EnvoiFlickr
         {
             // Change le bouton Annuler en bouton Quitter
             btnSuivant.Content = "Quitter";
+
+            // Arrête le DispatcherTimer
+            timProgression.Stop();
 
             if (e.Error != null)
             {
@@ -490,6 +510,12 @@ namespace EnvoiFlickr
                         "Fin du transfert", MessageBoxButton.OK, MessageBoxImage.Warning);
                 }
             }
+        }
+
+        // Fonction pour la progression de l'envoi de photo
+        private void timProgression_Tick(object sender, EventArgs e)
+        {
+            pbProgressionPhoto.Value = valProgression;
         }
     }
 }
